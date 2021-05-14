@@ -1,7 +1,7 @@
 name: injector_x
-description: A new Flutter package project.
-version: 0.0.1
-author:
+description: Dependence managment from Flutter.
+version: 1.0.0
+homepage: https://github.com/michaelopes/injector_x
 
 scripts:
   test: flutter test --coverage test/
