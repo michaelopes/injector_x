@@ -358,7 +358,26 @@ void _setup() {
 }
 ```
 
+O InjectoX não depende de uma chamada expecícica utilizando a refência do gerenciador de depêndencia
+no GetIt toda vez que precisamos recuperar um objeto que está registrado em seu pacote e feito como no exemplo abaixo:
+```dart
+ var viewModel = GetIt.I.get<IViewModel>();
+```
+Se não for feito assim todas as referências que precisam ser auto injetadas não funcionaram.
 
+No injectorX posso ser livre e fazer de dois jeitos.
+
+Usando o gerenciador de depêndencia como abaixo:
+```dart
+ IViewModel viewModel = InjectorXBind.get();
+```
+Ou instânciando a classe diretamente:
+
+```dart
+ var viewModel = ViewModelImpl();
+```
+
+Que mesmo assim tudo que precisa ser injetado nesse contexto será injetado sem problemas.
 
 
 
