@@ -374,25 +374,141 @@ Usando o gerenciador de depêndencia como abaixo:
 Ou instânciando a classe diretamente:
 
 ```dart
+
+ /* 
+ ViewModel depende de IUserUsecase que é implementado por UserUsecaseImpl que
+ por sua vez depende de IUserRepo que é implementado por UserRepoImpl que por
+ sua vez depende de IApi que é implementado por ApiImpl. Controle de dependencia
+ é feito em etapas por cada contexto por isso instânciar a classe diretamente não faz diferênça.
+ */
+ 
  var viewModel = ViewModelImpl();
 ```
 
 Que mesmo assim tudo que precisa ser injetado nesse contexto será injetado sem problemas.
 
 
+#### Registrado singleton
+
+```dart
+void _registerDependencies() {
+  InjectorXBind.add<IApi>(() => ApiImpl(), singleton: true);
+  InjectorXBind.add<IUserRepo>(() => UserRepoImpl(), singleton: true);
+  InjectorXBind.add<IUserUsecase>(() => UserUsecaseImpl(), singleton: true);
+  InjectorXBind.add<IViewModel>(() => ViewModelImpl(), singleton: true);
+  InjectorXBind.add<IViewModelTriple>(() => ViewModelTriple(), singleton: true);
+}
+```
+
+Dessa maneira é referênciado o contrato ao singleton, contudo esse singleton só será gerado uma instância se algum 
+objeto subjacente necessitar do seu uso, caso contrário o objeto não será posto em memória.
+
+
+#### Instanciando um novo objeto mesmo tendo registrado em singleton
+
+Existem 2 maneira de fazer isso uma é pelo InjetorXBind como abaixo:
+
+```dart
+ IViewModel viewModel = InjectorXBind.get(newInstance: true);
+```
+Dessa maneira mesmo tendo feito o registo no InjetorXBind como singleton essa chamada trará um nova instancia do objeto;
+
+Contudo isso pode ser feito se o Needle de um objeto em específico precisar que toda as vezes a suas injeções sejam instânciadas novamente
+
+Ex no caso do IUserRepo:
+```dart
+class UserRepoImpl extends Inject<UserRepoImpl> implements IUserRepo {
+  /*
+  Note o paramentro newInstance: true na referência no Needle<IApi>
+  isso quer dizer que mesmo que o InjectorXBind tenha feito o registro 
+  desse contrato em singleton nesse objeto isso será ignorado e sempre trará 
+  uma nova instancia de ApiImpl.
+  */
+  UserRepoImpl() : super(needles: [Needle<IApi>(newInstance: true)]);
+  late IApi api;
+  @override
+  void injector(InjectorX handler) {
+    api = handler.get();
+  }
+  @override
+  Future<bool> saveUser(String email, String name) async {
+    try {
+      await api
+          .post("https://api.com/user/save", {"email": email, "name": name});
+      return true;
+    } on Exception {
+      return false;
+    }
+  }
+}
+```
+
+### Testes e injeção de mocks
+Injetando ApiMock no UserRepoImp
+Existem duas maneira de fazer isso uma InjectorXBind.get e outra instânciando a classe diretamente.
+Nesse exemplo estou utilizando o Mockito para contrução dos mocks
+
+```dart
+class ApiMock extends Mock implements IApi {}
+
+void main() {
+
+  _registerDependencies();
+  
+  late ApiMock apiMock;
+  
+  setUp(() {
+     apiMock = ApiMock();
+  });
+
+   /*
+   Ex com InjectorXBind.get;
+   */
+  test("test use InjectorXBind.get", () async {
+
+    when(apiMock.post("", "")).thenAwswer((_) async => true);
+    /*
+    É utilizado injectMocks da implementação a qual quer testar para substituir as injeções dentro do seu 
+    contexto testando unicamente e injetando unicamente só o que pertence ao objeto que está mesa de teste 
+    ignorando totalmente tudo que não faz parte desse contexto em específico.
+    */
+    var userRepoImp = (InjectorXBind.get<IUserRepo>() as UserRepoImpl).injectMocks([NeedleMock<IApi>(mock: apiMock)]);
+    var res = await userRepoImp.saveUser("", "");
+    expect(res, isTrue);
+  });
+
+   /*
+   Ex com InjectorXBind.get;
+   */
+  test("test use direct implement instance", () async {
+
+    when(apiMock.post("", "")).thenAwswer((_) async => true);
+    /*
+    É utilizado injectMocks da implementação a qual quer testar para substituir as injeções dentro do seu 
+    contexto testando unicamente e injetando unicamente só o que pertence ao objeto que está mesa de teste 
+    ignorando totalmente tudo que não faz parte desse contexto em específico.
+    Assim a escrita fica mais simplificada contudo tem o mesmo resultado final
+    */
+    var userRepoImp = UserRepoImpl().injectMocks([NeedleMock<IApi>(mock: apiMock)]);
+    var res = await userRepoImp.saveUser("", "");
+    expect(res, isTrue);
+  });
+}
+```
+
+Este tipo de injeção de mock pode ser feito qual qualquer objeto relacionado ao InjectorX sendo eles InjectorViewModelTriple, StatefulWidgetInject e Inject, todos eles teram o mesmo comportamento e facilidade.
 
 
 
+### Caso queira ajudar dessa doc ou ficou com alguma dúvida deixe sua sujestão de melhoria 
+Email: michael.s.lopes@hotmail.com
+Assunto: Help InjectorX
+LinkedIn: https://linkedin.com/in/michaelslopes/
 
 
+Ajude a melhorar essa doc caso tenha ficado em dúvida em algum ponto da mesma.
 
-
-
-
-
-
-
-
+## Obrigado a todos e espero que gostem dessa lib e tenham as mesma vantagem que eu tive a usá-la.
 
 
 
