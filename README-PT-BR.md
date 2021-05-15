@@ -1,4 +1,7 @@
 
+# InjectorX
+Dependence managment from Flutter
+
 A ideia do InjectorX surgiu para facilitar o controle e a manutenção das injeções de dependências em um projeto flutter com o Clean Architecture. 
 A principal diferença InjectorX para os principais packages já disponíveis é o controle de injeção por contexto, sendo assim descentralizando as 
 injeções e não instanciando o que não precisa fora daquele contexto. Nesse modelo o objeto em si é um service locator para suas próprias injeções,
