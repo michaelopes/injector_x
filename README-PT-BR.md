@@ -506,6 +506,7 @@ Este tipo de injeção de mock pode ser feito qual qualquer objeto relacionado a
 ### Caso queira ajudar dessa doc ou ficou com alguma dúvida deixe sua sujestão de melhoria 
 Email: michael.s.lopes@hotmail.com
 Assunto: Help InjectorX
+
 LinkedIn: https://linkedin.com/in/michaelslopes/
 
 
