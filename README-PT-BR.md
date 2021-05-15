@@ -64,7 +64,7 @@ herdar da classe Inject para podermos manipular as injeções desse contexto
 separadamente.
  */
 
-class UserRepoImpl extends Inject<IUserRepoImpl> implements IUserRepo {
+class UserRepoImpl extends Inject<UserRepoImpl> implements IUserRepo {
   /*
    No contrutor filho não é preciso passar o que esse objeto precisa para 
   como injeção. Isso é feito um pouco diferente agora, através de Needles 
@@ -319,10 +319,44 @@ class _ScreenTripleExampleState extends State<ScreenTripleExample> {
     );
   }
 }
-
 ```
 
+### Referência de contratos
+Para que o InjectorX saiba o que deve injetar em cada needle devemos na inicialização
+do app mostrar para o InjectoX qual a implementação de cada contrato.
+Note que em nenhum momento é passado implementação para o contrutor de outra refêrencia, por mais 
+que a implementação tem injeções em sua implementação.
+Isso fará toda a diferença no controle de injeção, pois fica mais simples a visualização e tudo não será 
+carregado de uma vez em memória e sim por demanda, a medida que cada objeto necessite de uma injeção.
 
+
+```dart
+void _registerDependencies() {
+  InjectorXBind.add<IApi>(() => ApiImpl());
+  InjectorXBind.add<IUserRepo>(() => UserRepoImpl());
+  InjectorXBind.add<IUserUsecase>(() => UserUsecaseImpl());
+  InjectorXBind.add<IViewModel>(() => ViewModelImpl());
+  InjectorXBind.add<IViewModelTriple>(() => ViewModelTriple());
+}
+```
+
+#### Como ficaria isso com GetIt só um exemplo simples e ficticio
+Note que passamos as referências de injeção por contrutor, aqui como é 
+um exemplo pequeno ainda conseguimos visualizar facilmente, contudo a medida que 
+presisar de várias injeções em um único contrutor e aplicação for crescendo, isso virará 
+um caos e ficará extremamente difícil de visualizar e controlar o que está injetando no que.
+E nesse caso todos os objetos foram subidos em memória mesmo que o um objeto não precise 
+daquela referência ele já está disponível.
+
+```dart
+void _setup() {
+  GetIt.I.registerSingleton<IApi>(ApiImpl());
+  GetIt.I.registerSingleton<IUserRepo>(UserRepoImpl( GetIt.I.get<IApi>() ));
+  GetIt.I.registerSingleton<IUserUsecase>(UserUsecaseImpl( GetIt.I.get<IUserRepo>() ));
+  GetIt.I.registerSingleton<IViewModel>(ViewModelImpl( GetIt.I.get<IUserUsecase>() ));
+  GetIt.I.registerSingleton<IViewModelTriple>(ViewModelTriple( GetIt.I.get<IUserUsecase>() ));
+}
+```
 
 
 
