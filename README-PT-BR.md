@@ -511,7 +511,7 @@ LinkedIn: https://linkedin.com/in/michaelslopes/
 
 
 
-#### Obrigado a todos e espero que gostem dessa lib e tenham as mesma vantagem que eu tive a usá-la.
+#### Obrigado a todos e espero que gostem dessa lib e tenham as mesmas vantagens que eu tive a usá-la.
 
 
 
