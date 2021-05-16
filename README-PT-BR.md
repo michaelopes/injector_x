@@ -3,9 +3,9 @@
 Dependence managment from Flutter
 
 A ideia do InjectorX surgiu para facilitar o controle e a manutenção das injeções de dependências em um projeto flutter com o Clean Architecture. 
-A principal diferença InjectorX para os principais packages já disponíveis é o controle de injeção por contexto, sendo assim descentralizando as 
+A principal diferença InjectorX para os principais packages já disponíveis é o controle de injeção por contexto, assim descentralizando as 
 injeções e não instanciando o que não precisa fora daquele contexto. Nesse modelo o objeto em si é um service locator para suas próprias injeções,
-substituindo a necessidade de passar as injeções via controlador, contudo não perdendo a o poder de desacoplamento de código e facilitando ainda 
+substituindo a necessidade de passar as injeções via controlador, contudo não perdendo o poder de desacoplamento de código, facilitando ainda 
 mais a visualização do que é injetado naquele objeto.
 
 
@@ -18,9 +18,10 @@ mais a visualização do que é injetado naquele objeto.
 
 Antes de tudo devemos definir nossos contratos da aplicação.
 
-Em um contrado é estabelecido quais as regras que um objeto tem que ter para ao ser implementado.
+Em um contrato é estabelecido quais as regras que um objeto tem que ter ao ser implementado.
 Para que os objetos subjacentes não se acople a implementação em si e sim ao contrato, sendo assim independente
-da implementação qualquer objeto que siga as regas do contrato será aceito na injeção referênciada.
+da implementação qualquer objeto que siga as regras do contrato será aceito na injeção referenciada.
+
 
 ```dart
 abstract class IApi {
@@ -49,8 +50,8 @@ abstract class IViewModelTriple extends InjetorXTripleStore<Exception, bool> {
 }
 
 /*
-Nesse caso não peciso herdar de Inject, pois o contexto desse objeto 
-não precisa controlar suas injeções, contudo o InjetorX poderá injeta-lo onde 
+Nesse caso não preciso herdar de Inject, pois o contexto desse objeto 
+não precisa controlar suas injeções, contudo o InjetorX poderá injetá-lo onde 
 houver necessidade como no exemplo seguinte UserRepoImpl
 */
 class ApiImpl implements IApi {
@@ -62,35 +63,35 @@ class ApiImpl implements IApi {
 }
 
 /*
-Como nossa implementação do repositório depende do contrado da api, devemos 
+Como nossa implementação do repositório depende do contrato da api, devemos 
 herdar da classe Inject para podermos manipular as injeções desse contexto 
 separadamente.
  */
 
 class UserRepoImpl extends Inject<UserRepoImpl> implements IUserRepo {
   /*
-   No contrutor filho não é preciso passar o que esse objeto precisa para 
-  como injeção. Isso é feito um pouco diferente agora, através de Needles 
-  (Needle é agulha em inglês). Cada agulha (Needle<IApi>()) fará a refêrencia 
+  No construtor dessa classe não é preciso passar as referências que precisam ser injetadas. 
+  Isso é feito um pouco diferente agora, através de Needles 
+  (Needle é agulha em inglês). Cada agulha (Ex: Needle<IApi>()) fará a referência 
   necessária ao contrato para o InjectorX saiba o que deve ser injetado no contexto desse
   objeto, pelo no método injector.
-   */
+  */
   UserRepoImpl() : super(needles: [Needle<IApi>()]);
   /*
-  Aqui é definido a variável do contrado da Api que o repositório aceitará para ser
+  Aqui é definido a variável do contrato da Api que o repositório aceitará para ser
   injetado em seu contexto.
   */
   late IApi api;
 
   /*
-  Quando herdamos de Inject automaticamente esse método será criado ele terá 
-  objecto InjectorX que é um service locator para identificar e referênciar as 
+  Quando a classe herda de Inject automaticamente esse método será criado ele terá 
+  objeto InjectorX que é um service locator para identificar e referenciar as 
   injeções ao contrato que o IUserRepoImpl precisa.
   */
   @override
   void injector(InjectorX handler) {
     /*
-    Aqui de forma abstratida o handler do InjectorX 
+    Aqui de forma abstraída o handler do InjectorX 
     buscará a implementação registada para o contrato IApi
     */
     api = handler.get();
@@ -141,11 +142,11 @@ class UserUsecaseImpl extends Inject<UserUsecaseImpl> implements IUserUsecase {
   }
 }
 
-/*
-  O ViewModel é responsavel pelo controle de estado de uma tela, ou de um widget em específico
-  note que o view model não controla regra de negócio sim estado da tela qual for referênciado.
+ /*
+  O ViewModel é responsável pelo controle de estado de uma tela, ou de um widget em específico, note que o 
+  view model não controla regra de negócio e sim estado da tela qual for referenciado.
   Nesse caso o estado está sendo controlado por RxNotifier, contudo isso pode ser feito 
- com qualquer outro gerenciador de estado da sua preferência.
+  com qualquer outro gerenciador de estado da sua preferência.
  */
 class ViewModelImpl extends Inject<ViewModelImpl> implements IViewModel {
   ViewModelImpl() : super(needles: [Needle<IUserUsecase>()]);
@@ -174,17 +175,16 @@ class ViewModelImpl extends Inject<ViewModelImpl> implements IViewModel {
 }
 
 /* 
-O InjectorX também pode ser integrado com o flutter_triple de maneira simplicada
-facilitando ainda mais o controle de estado por fluxo.
+ O InjectorX também pode ser integrado com o flutter_triple de maneira simplificada
+ facilitando ainda mais o controle de estado por fluxo.
  */
-
 class ViewModelTriple
     extends InjectorViewModelTriple<ViewModelTriple, Exception, bool>
     implements IViewModelTriple {
   /*
   Note que há uma pequena diferença agora a 2 parâmetros no super. Isso 
   ocorre porque ao herdar de InjectorViewModelTriple além dos needles responsáveis
-  pela gerencia dos contratos de injeção também devemos passar o estado inicial 
+  pela gerência dos contratos de injeção também devemos passar o estado inicial 
   do flutter_triple.
   Para saber mais sobre o flutter_triple acesse: https://pub.dev/packages/flutter_triple
   */
@@ -197,10 +197,10 @@ class ViewModelTriple
   }
 
   /*
-  Aqui retorno a store do flutter_triple responsável pelo gerenciamento de 
+  Aqui é retornado a store do flutter_triple responsável pelo gerenciamento de 
   estado do ViewModel. Ao implementar IViewModelTriple que extende de InjetorXTripleStore<Exception, bool>
-  Esse médoto deverá ser implementado para que a Tela/View/Ui tem acesso a essa a store da implementação 
-  atraves de seu contrato. 
+  Esse método deverá ser implementado para que a Tela/View/Ui tem acesso a essa a store da implementação 
+  através de seu contrato. 
    */
   @override
   NotifierStore<Exception, bool> getStore() {
@@ -221,12 +221,12 @@ class ViewModelTriple
 
 /*
 Agora partiremos para implementação de uma view para exemplificar o fluxo completo.
-O InjectoX tem um recurso expecífico para lidar com as view por enquanto somente é possível
+O InjectoX tem um recurso específico para lidar com a view por enquanto somente é possível
 com Stateful mais em breve o Stateless também terá suporte.
-Note que ao em vez de herdar de StatefulWidget herdaremos de StatefulWidgetInject
-isso nos dará todos os recursos de injeção que já vemos para tráz contudo no contexto de um 
+Note que ao em vez de herdar de StatefulWidget é herdado de StatefulWidgetInject
+isso dará todos os recursos de injeção que já vimos nos exemplos anteriores, contudo no contexto de um 
 Widget.
-Nesse primeiro exempo será usado o ViewModel com RxNotifier;
+Nesse primeiro exemplo será usado o ViewModel com RxNotifier;
 
 Observe que agora não é mais implementado o método:
 @override
@@ -251,7 +251,7 @@ class _ScreenExampleState extends State<ScreenExample> {
     super.initState();
     /*
     Aqui agora ao em vez de usar o handler do método injector como exemplificado anteriormente, 
-    simplesmente chamos widget.get() que terár o service locator da view com os recursos do InjectorX
+    simplesmente chamamos widget.get() que terá o service locator da view com os recursos do InjectorX
     */
     viewModel = widget.get();
   }
@@ -284,9 +284,9 @@ class _ScreenExampleState extends State<ScreenExample> {
 }
 
 /*
-Aqui outro exemplo de como podemos implementar com o flutter_triple não a muita diferênca em essência
-a não ser como lidamos com a mudaça de estado.
- */
+Aqui outro exemplo de como podemos implementar com o flutter_triple não há muita diferença em essência
+a não ser como lidamos com a mudança de estado.
+*/
 class ScreenTripleExample extends StatefulWidgetInject<ScreenTripleExample> {
   ScreenTripleExample() : super(needles: [Needle<IViewModelTriple>()]);
   @override
@@ -306,7 +306,7 @@ class _ScreenTripleExampleState extends State<ScreenTripleExample> {
   Widget build(BuildContext context) {
     return Container(
       child: ScopedBuilder(
-        //Note que agora usamos o getStore da implementação ViewModel com flutter_triple
+        //Note que agora é usado o getStore da implementação ViewModel com flutter_triple
         store: viewModel.getStore(),
         onState: (context, state) => Center(
           child: ElevatedButton(
@@ -326,12 +326,11 @@ class _ScreenTripleExampleState extends State<ScreenTripleExample> {
 
 ### Referência de contratos
 Para que o InjectorX saiba o que deve injetar em cada needle devemos na inicialização
-do app mostrar para o InjectoX qual a implementação de cada contrato.
-Note que em nenhum momento é passado implementação para o contrutor de outra refêrencia, por mais 
-que a implementação tem injeções em sua implementação.
+do app mostrar para o InjectorX qual a implementação de cada contrato.
+Note que em nenhum momento é passado implementação para o construtor de outra referência, por mais 
+que a implementação tenha injeções em sua implementação.
 Isso fará toda a diferença no controle de injeção, pois fica mais simples a visualização e tudo não será 
-carregado de uma vez em memória e sim por demanda, a medida que cada objeto necessite de uma injeção.
-
+carregado de uma vez em memória e sim por demanda, à medida que cada objeto necessite de uma injeção.
 
 ```dart
 void _registerDependencies() {
@@ -343,13 +342,14 @@ void _registerDependencies() {
 }
 ```
 
-#### Como ficaria isso com GetIt só um exemplo simples e ficticio
-Note que passamos as referências de injeção por contrutor, aqui como é 
-um exemplo pequeno ainda conseguimos visualizar facilmente, contudo a medida que 
-presisar de várias injeções em um único contrutor e aplicação for crescendo, isso virará 
+#### Como ficaria isso com GetIt só um exemplo simples e fictício
+Note que é passado as referências de injeção por construtor, aqui como é 
+um exemplo pequeno ainda conseguimos visualizar facilmente, contudo à medida que 
+precisar de várias injeções em um único construtor e aplicação for crescendo, isso virará 
 um caos e ficará extremamente difícil de visualizar e controlar o que está injetando no que.
-E nesse caso todos os objetos foram subidos em memória mesmo que o um objeto não precise 
-daquela referência ele já está disponível.
+E nesse caso todos os objetos foram subidos em memória mesmo que não precise 
+daquela referência ela já está em memória.
+
 
 ```dart
 void _setup() {
@@ -361,35 +361,34 @@ void _setup() {
 }
 ```
 
-O InjectoX não depende de uma chamada expecícica utilizando a refência do gerenciador de depêndencia
+O InjectoX não depende de uma chamada específica utilizando a referência do gerenciador de dependência
 no GetIt toda vez que precisamos recuperar um objeto que está registrado em seu pacote e feito como no exemplo abaixo:
+
 ```dart
  var viewModel = GetIt.I.get<IViewModel>();
 ```
-Se não for feito assim todas as referências que precisam ser auto injetadas não funcionaram.
+Se não for feito como no exemplo acima todas as referências que precisam ser auto injetadas não funcionarão.
 
 No injectorX posso ser livre e fazer de dois jeitos.
+Usando o gerenciador de dependência como abaixo:
 
-Usando o gerenciador de depêndencia como abaixo:
 ```dart
  IViewModel viewModel = InjectorXBind.get();
 ```
-Ou instânciando a classe diretamente:
+Ou instanciando a classe diretamente:
 
 ```dart
 
  /* 
  ViewModel depende de IUserUsecase que é implementado por UserUsecaseImpl que
  por sua vez depende de IUserRepo que é implementado por UserRepoImpl que por
- sua vez depende de IApi que é implementado por ApiImpl. Controle de dependencia
- é feito em etapas por cada contexto por isso instânciar a classe diretamente não faz diferênça.
+ sua vez depende de IApi que é implementado por ApiImpl. Controle de dependência
+ é feito em etapas por cada contexto, por isso instanciar a classe diretamente não faz diferença.
+ Que mesmo assim tudo que precisa ser injetado nesse contexto será injetado sem problemas.
  */
  
  var viewModel = ViewModelImpl();
 ```
-
-Que mesmo assim tudo que precisa ser injetado nesse contexto será injetado sem problemas.
-
 
 #### Registrado singleton
 
@@ -403,8 +402,8 @@ void _registerDependencies() {
 }
 ```
 
-Dessa maneira é referênciado o contrato ao singleton, contudo esse singleton só será gerado uma instância se algum 
-objeto subjacente necessitar do seu uso, caso contrário o objeto não será posto em memória.
+Dessa maneira é referenciado o contrato ao singleton, contudo esse singleton só será gerado uma instância se algum 
+objeto subjacente necessite do seu uso, caso contrário o objeto não será posto em memória.
 
 
 #### Instanciando um novo objeto mesmo tendo registrado em singleton
@@ -414,18 +413,18 @@ Existem 2 maneira de fazer isso uma é pelo InjetorXBind como abaixo:
 ```dart
  IViewModel viewModel = InjectorXBind.get(newInstance: true);
 ```
-Dessa maneira mesmo tendo feito o registo no InjetorXBind como singleton essa chamada trará um nova instancia do objeto;
+Da maneira do exemplo acima, mesmo tendo feito o registo no InjetorXBind como singleton essa chamada trará um nova instância do objeto;
 
-Contudo isso pode ser feito se o Needle de um objeto em específico precisar que toda as vezes a suas injeções sejam instânciadas novamente
+Contudo isso pode ser feito se o Needle de um objeto em específico precisar que toda as vezes a suas injeções sejam instanciadas novamente
 
 Ex no caso do IUserRepo:
 ```dart
 class UserRepoImpl extends Inject<UserRepoImpl> implements IUserRepo {
   /*
-  Note o paramentro newInstance: true na referência no Needle<IApi>
+  Note o parâmetro newInstance: true na referência no Needle<IApi>
   isso quer dizer que mesmo que o InjectorXBind tenha feito o registro 
-  desse contrato em singleton nesse objeto isso será ignorado e sempre trará 
-  uma nova instancia de ApiImpl.
+  desse contrato em singleton, nesse objeto isso será ignorado e sempre trará 
+  uma nova instância de ApiImpl.
   */
   UserRepoImpl() : super(needles: [Needle<IApi>(newInstance: true)]);
   late IApi api;
@@ -448,8 +447,8 @@ class UserRepoImpl extends Inject<UserRepoImpl> implements IUserRepo {
 
 ### Testes e injeção de mocks
 Injetando ApiMock no UserRepoImp
-Existem duas maneira de fazer isso uma InjectorXBind.get e outra instânciando a classe diretamente.
-Nesse exemplo estou utilizando o Mockito para contrução dos mocks
+Existem duas maneiras de fazer isso, uma InjectorXBind.get e outra instanciando a classe diretamente.
+Nesse exemplo estou utilizando o Mockito para construção dos mocks
 
 ```dart
 class ApiMock extends Mock implements IApi {}
@@ -472,7 +471,7 @@ void main() {
     when(apiMock.post("", "")).thenAwswer((_) async => true);
     /*
     É utilizado injectMocks da implementação a qual quer testar para substituir as injeções dentro do seu 
-    contexto testando unicamente e injetando unicamente só o que pertence ao objeto que está mesa de teste 
+    contexto testando e injetando unicamente só o que pertence ao objeto que está mesa de teste, 
     ignorando totalmente tudo que não faz parte desse contexto em específico.
     */
     var userRepoImp = (InjectorXBind.get<IUserRepo>() as UserRepoImpl).injectMocks([NeedleMock<IApi>(mock: apiMock)]);
@@ -481,14 +480,14 @@ void main() {
   });
 
    /*
-   Ex com InjectorXBind.get;
+   Exemplo por instância;
    */
   test("test use direct implement instance", () async {
 
     when(apiMock.post("", "")).thenAwswer((_) async => true);
     /*
     É utilizado injectMocks da implementação a qual quer testar para substituir as injeções dentro do seu 
-    contexto testando unicamente e injetando unicamente só o que pertence ao objeto que está mesa de teste 
+    contexto testando e injetando unicamente só o que pertence ao objeto que está mesa de teste, 
     ignorando totalmente tudo que não faz parte desse contexto em específico.
     Assim a escrita fica mais simplificada contudo tem o mesmo resultado final
     */
@@ -499,20 +498,20 @@ void main() {
 }
 ```
 
-Este tipo de injeção de mock pode ser feito qual qualquer objeto relacionado ao InjectorX sendo eles InjectorViewModelTriple, StatefulWidgetInject e Inject, todos eles teram o mesmo comportamento e facilidade.
+Este tipo de injeção de mock pode ser feito qual qualquer objeto relacionado ao InjectorX sendo eles InjectorViewModelTriple, StatefulWidgetInject e Inject, todos eles terão o mesmo comportamento e facilidade.
 
 
-
-### Caso queira ajudar dessa doc ou ficou com alguma dúvida deixe sua sujestão de melhoria 
+### Caso queira ajudar dessa doc ou ficou com alguma dúvida deixe sua sugestão de melhoria 
 Email: michael.s.lopes@hotmail.com
+
 Assunto: Help InjectorX
 
 LinkedIn: https://linkedin.com/in/michaelslopes/
 
 
-Ajude a melhorar essa doc caso tenha ficado em dúvida em algum ponto da mesma.
 
-## Obrigado a todos e espero que gostem dessa lib e tenham as mesma vantagem que eu tive a usá-la.
+
+#### Obrigado a todos e espero que gostem dessa lib e tenham as mesma vantagem que eu tive a usá-la.
 
 
 
