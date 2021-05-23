@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_triple/flutter_triple.dart';
-import 'package:injector_x/injector_x_core.dart';
-import 'package:injector_x/injector_x_utils.dart';
+import 'package:injector_x/injector_x.dart';
 
 abstract class IPresenterViewModel
     extends InjetorXViewModelStore<NotifierStore<Exception, int>> {

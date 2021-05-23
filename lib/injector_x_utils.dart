@@ -1,5 +1,10 @@
 import 'injector_x_core.dart';
 
+class InjectCombinateNotInitialized implements Exception {
+  InjectCombinateNotInitialized(this.message);
+  final String message;
+}
+
 abstract class InjetorXViewModelStore<T> {
   T getStore();
 }
@@ -23,6 +28,10 @@ abstract class InjectCombinate<R extends InjectCombinate<R>> {
 
   T inject<T>() {
     var handler = _finder['handler'];
+    if (handler == null) {
+      InjectCombinateNotInitialized(
+          "InjectCombinate not initialized on contructor. Put a init() on class contructor");
+    }
     return handler!.injectorX.get<T>();
   }
 
@@ -31,6 +40,9 @@ abstract class InjectCombinate<R extends InjectCombinate<R>> {
     if (handler != null) {
       print("aki");
       handler.injectMocks(needleMocks);
+    } else {
+      InjectCombinateNotInitialized(
+          "InjectCombinate not initialized on contructor. Put a init() on class contructor");
     }
     return this as R;
   }
