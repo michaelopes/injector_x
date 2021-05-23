@@ -45,7 +45,7 @@ abstract class IViewModel {
 Esse contrato é utilizando o flutter_tripple será exemplificado 
 mais para frente 
 */
-abstract class IViewModelTriple extends InjetorXTripleStore<Exception, bool> {
+abstract class IViewModelTriple extends InjetorXViewModelStore<NotifierStore<Exception, int>> {
   Future<void> save(String email, String name);
 }
 
@@ -178,54 +178,38 @@ class ViewModelImpl extends Inject<ViewModelImpl> implements IViewModel {
  O InjectorX também pode ser integrado com o flutter_triple de maneira simplificada
  facilitando ainda mais o controle de estado por fluxo.
  */
-class ViewModelTriple
-    extends InjectorViewModelTriple<ViewModelTriple, Exception, bool>
-    implements IViewModelTriple {
-  /*
-  Note que há uma pequena diferença agora a 2 parâmetros no super. Isso 
-  ocorre porque ao herdar de InjectorViewModelTriple além dos needles responsáveis
-  pela gerência dos contratos de injeção também devemos passar o estado inicial 
-  do flutter_triple.
-  Para saber mais sobre o flutter_triple acesse: https://pub.dev/packages/flutter_triple
-  */
-  ViewModelTriple() : super(false, needles: [Needle<IUserUsecase>()]);
-
-  late IUserUsecase userUsecase;
-  @override
-  void injector(InjectorX handler) {
-    userUsecase = handler.get();
-  }
-
-  /*
-  Aqui é retornado a store do flutter_triple responsável pelo gerenciamento de 
-  estado do ViewModel. Ao implementar IViewModelTriple que extende de InjetorXTripleStore<Exception, bool>
-  Esse método deverá ser implementado para que a Tela/View/Ui tem acesso a essa a store da implementação 
-  através de seu contrato. 
+class PresenterViewModel extends NotifierStore<Exception, int>
+    with InjectCombinate<PresenterViewModel>
+    implements IPresenterViewModel {
+  PresenterViewModel() : super(0) {
+    /*
+    Note que há uma pequena diferença agora temos um init() dentro da chamada do 
+    contrutor. Isso ocorre porque ao herdar de InjectCombinate precisa ser iniciado para que o InjectorX saba quais  needles responsáveis pela gerência dos contratos de injeção .
+    Para saber mais sobre o flutter_triple acesse: https://pub.dev/packages/flutter_triple
    */
+    init(needles: [Needle<IUsecase>()]);
+  }
+  /*
+  No te que referenciamos a dependência diferente agora, não é manipulado mais pelo injector(InjectorX hangles) sim dessa nova maneira referenciado pelo inject()
+  */
+  IUsecase get usecase => inject();
+
   @override
-  NotifierStore<Exception, bool> getStore() {
-    return store;
+  bool increment() {
+    update(usecase.increment(state));
+    return true;
   }
 
   @override
-  Future<void> save(String email, String name) async {
-    store.setLoading(true);
-    try {
-      store.value = await userUsecase(email, name);
-    } on Exception catch (e) {
-      store.setError(e);
-    }
-    store.setLoading(false);
+  NotifierStore<Exception, int> getStore() {
+    return this;
   }
 }
 
 /*
 Agora partiremos para implementação de uma view para exemplificar o fluxo completo.
-O InjectoX tem um recurso específico para lidar com a view por enquanto somente é possível
-com Stateful mais em breve o Stateless também terá suporte.
-Note que ao em vez de herdar de StatefulWidget é herdado de StatefulWidgetInject
-isso dará todos os recursos de injeção que já vimos nos exemplos anteriores, contudo no contexto de um 
-Widget.
+O InjectoX tem um recurso específico para lidar com a view.
+
 Nesse primeiro exemplo será usado o ViewModel com RxNotifier;
 
 Observe que agora não é mais implementado o método:
@@ -237,8 +221,11 @@ void injector(InjectorX handler) {
 Se tratando de uma view isso é feito de maneira diferente. Olhem no intiState() a novo jeito proposto.
 */
 
-class ScreenExample extends StatefulWidgetInject<ScreenExample> {
-  ScreenExample() : super(needles: [Needle<IViewModel>()]);
+class ScreenExample extends StatefulWidget
+    with InjectCombinate<ScreenExample> {
+  ScreenExample() {
+     init(needles: [Needle<IViewModel>()])
+  };
   @override
   _ScreenExampleState createState() => _ScreenExampleState();
 }
@@ -251,9 +238,9 @@ class _ScreenExampleState extends State<ScreenExample> {
     super.initState();
     /*
     Aqui agora ao em vez de usar o handler do método injector como exemplificado anteriormente, 
-    simplesmente chamamos widget.get() que terá o service locator da view com os recursos do InjectorX
+    simplesmente chamamos widget.inject() que terá o service locator da view com os recursos do InjectorX
     */
-    viewModel = widget.get();
+    viewModel = widget.inject();
   }
 
   @override
@@ -287,8 +274,12 @@ class _ScreenExampleState extends State<ScreenExample> {
 Aqui outro exemplo de como podemos implementar com o flutter_triple não há muita diferença em essência
 a não ser como lidamos com a mudança de estado.
 */
-class ScreenTripleExample extends StatefulWidgetInject<ScreenTripleExample> {
-  ScreenTripleExample() : super(needles: [Needle<IViewModelTriple>()]);
+class ScreenTripleExample extends StatefulWidget
+    with InjectCombinate<ScreenTripleExample> {
+  ScreenTripleExample() {
+     //Não se esqueça de iniciar o injectorX
+     init(needles: [Needle<IViewModel>()])
+  };
   @override
   _ScreenTripleExampleState createState() => _ScreenTripleExampleState();
 }
@@ -299,7 +290,7 @@ class _ScreenTripleExampleState extends State<ScreenTripleExample> {
   @override
   void initState() {
     super.initState();
-    viewModel = widget.get();
+    viewModel = widget.inject();
   }
 
   @override
