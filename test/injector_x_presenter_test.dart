@@ -2,56 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_triple/flutter_triple.dart';
 import 'package:injector_x/injector_x_core.dart';
-import 'package:injector_x/injector_x_presenter.dart';
-import 'package:injector_x/injector_x_view_model.dart';
+import 'package:injector_x/injector_x_utils.dart';
 
-abstract class IPresenterViewModel extends InjetorXTripleStore<Exception, int> {
+abstract class IPresenterViewModel
+    extends InjetorXViewModelStore<NotifierStore<Exception, int>> {
   bool increment();
 }
 
-class PresenterViewModel
-    extends InjectorViewModelTriple<PresenterViewModel, Exception, int>
+class PresenterViewModel extends NotifierStore<Exception, int>
+    with InjectCombinate<PresenterViewModel>
     implements IPresenterViewModel {
-  PresenterViewModel() : super(0);
-
-  @override
-  void injector(InjectorX handler) {}
+  PresenterViewModel() : super(0) {
+    init();
+  }
 
   @override
   bool increment() {
-    store.value = store.value + 1;
+    update(state + 1);
     return true;
   }
 
   @override
   NotifierStore<Exception, int> getStore() {
-    return store;
+    return this;
   }
 }
 
-class PresenterViewModelMock
-    extends InjectorViewModelTriple<PresenterViewModelMock, Exception, int>
+class PresenterViewModelMock extends NotifierStore<Exception, int>
+    with InjectCombinate<PresenterViewModel>
     implements IPresenterViewModel {
-  PresenterViewModelMock() : super(0);
-
-  @override
-  void injector(InjectorX handler) {}
+  PresenterViewModelMock() : super(0) {
+    init();
+  }
 
   @override
   bool increment() {
-    store.value = store.value + 2;
+    update(state + 2);
     return true;
   }
 
   @override
   NotifierStore<Exception, int> getStore() {
-    return store;
+    return this;
   }
 }
 
-//_StatePresenterState() : super(needles: [Needle<IPresenterViewModel>()]);
-class StatePresenter extends StatefulWidgetInject<StatePresenter> {
-  StatePresenter() : super(needles: [Needle<IPresenterViewModel>()]);
+class StatePresenter extends StatefulWidget
+    with InjectCombinate<StatePresenter> {
+  StatePresenter() {
+    init(needles: [Needle<IPresenterViewModel>()]);
+  }
   @override
   _StatePresenterState createState() => _StatePresenterState();
 }
@@ -62,7 +62,7 @@ class _StatePresenterState extends State<StatePresenter> {
   @override
   void initState() {
     super.initState();
-    viewModel = widget.get();
+    viewModel = widget.inject();
   }
 
   @override

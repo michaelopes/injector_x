@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_triple/flutter_triple.dart';
 import 'package:injector_x/injector_x_core.dart';
-import 'package:injector_x/injector_x_view_model.dart';
+import 'package:injector_x/injector_x_utils.dart';
 
 abstract class IUsecase {
   int increment(int value);
@@ -14,28 +14,29 @@ class Usecase implements IUsecase {
   }
 }
 
-abstract class IPresenterViewModel extends InjetorXTripleStore<Exception, int> {
-  void increment();
+abstract class IPresenterViewModel
+    extends InjetorXViewModelStore<NotifierStore<Exception, int>> {
+  bool increment();
 }
 
-class PresenterViewModel
-    extends InjectorViewModelTriple<PresenterViewModel, Exception, int>
+class PresenterViewModel extends NotifierStore<Exception, int>
+    with InjectCombinate<PresenterViewModel>
     implements IPresenterViewModel {
-  PresenterViewModel() : super(0, needles: [Needle<IUsecase>()]);
-  late IUsecase usecase;
-  @override
-  void injector(InjectorX handler) {
-    usecase = handler.get();
+  PresenterViewModel() : super(0) {
+    init(needles: [Needle<IUsecase>()]);
   }
 
+  IUsecase get usecase => inject();
+
   @override
-  void increment() {
-    store.value = usecase.increment(store.value);
+  bool increment() {
+    update(usecase.increment(state));
+    return true;
   }
 
   @override
   NotifierStore<Exception, int> getStore() {
-    return store;
+    return this;
   }
 }
 
@@ -55,16 +56,16 @@ void main() {
   _registerDependencies();
   test('Injector x view model inject', () async {
     var viewmodel = PresenterViewModel();
-    expect(viewmodel.store.value, 0);
+    expect(viewmodel.state, 0);
     viewmodel.increment();
-    expect(viewmodel.store.value, 1);
+    expect(viewmodel.state, 1);
   });
 
   test('Injector x view model inject mock', () async {
     var viewmodel = PresenterViewModel()
         .injectMocks([NeedleMock<IUsecase>(mock: UsecaseMock())]);
-    expect(viewmodel.store.value, 0);
+    expect(viewmodel.state, 0);
     viewmodel.increment();
-    expect(viewmodel.store.value, 2);
+    expect(viewmodel.state, 2);
   });
 }

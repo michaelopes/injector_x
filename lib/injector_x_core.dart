@@ -1,5 +1,3 @@
-library injector_x;
-
 class InjectionNotFound implements Exception {
   InjectionNotFound(this.message);
   final String message;

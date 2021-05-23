@@ -72,7 +72,7 @@ packages:
     source: hosted
     version: "1.2.0"
   flutter:
-    dependency: "direct main"
+    dependency: "direct dev"
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -82,7 +82,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_triple:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: flutter_triple
       url: "https://pub.dartlang.org"
@@ -214,4 +214,3 @@ packages:
     version: "6.2.0"
 sdks:
   dart: ">=2.12.0 <3.0.0"
-  flutter: ">=2.0.0"
