@@ -101,8 +101,8 @@ void main() {
   test('Check usecase mock', () {
     var repo = InjectorXBind.get<IRepo>();
     var usecase = InjectorXBind.get<IUsecase<String, bool>>();
-    var viewModel = ViewModel()
-        .injectMocks([NeedleMock<IUsecase<String, bool>>(mock: UsecaseMock())]);
+    var viewModel =
+        ViewModel().injectMocks([NeedleMock<IUsecase>(mock: UsecaseMock())]);
     var name = "João";
     expect(repo.save(name), isTrue);
     expect(usecase(name), isFalse);
@@ -116,6 +116,12 @@ void main() {
 
     var equals = usecase.hashCode == usecaseNew.hashCode;
     expect(equals, isFalse);
+  });
+
+  test('Check get usecase short type', () {
+    var usecase = InjectorXBind.get<IUsecase>();
+
+    expect(usecase, isNotNull);
   });
 
   test('Check InjectionNotFound', () {

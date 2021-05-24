@@ -88,17 +88,27 @@ class _InjectStore<T extends Object> {
 class InjectorXBind {
   static final List<_InjectStore> _store = [];
 
+  static String getKey(String key) {
+    var kArr = key.split("<");
+    if (kArr.isNotEmpty) {
+      return kArr[0];
+    } else {
+      return key;
+    }
+  }
+
   static bool _checkKeyExists(String key) {
     return _store.where((e) => e.key == key).isNotEmpty;
   }
 
   static void add<T extends Object>(InjectableAdd<T> injectable,
       {bool singleton = false}) {
-    if (_checkKeyExists(T.toString())) {
+    var key = getKey(T.toString());
+    if (_checkKeyExists(key)) {
       throw DuplicateInjectionFound("${T.toString()} is duplicate.");
     }
     _store.add(_InjectStore<T>(
-      key: T.toString(),
+      key: key,
       singleton: null,
       injectable: injectable,
       isSingleton: singleton,
@@ -107,12 +117,12 @@ class InjectorXBind {
 
   static void replace<T extends Object>(InjectableAdd<T> injectable,
       {bool singleton = false}) {
-    var key = T.toString();
+    var key = getKey(T.toString());
     var list = _store.where((e) => e.key == key).toList();
     if (list.isNotEmpty) {
       _store.removeWhere((e) => e.key == key);
       _store.add(_InjectStore<T>(
-        key: T.toString(),
+        key: key,
         singleton: null,
         injectable: injectable,
         isSingleton: singleton,
@@ -129,11 +139,12 @@ class InjectorXBind {
   }
 
   static dynamic getByType(Type type, {bool newInstance = false}) {
-    if (!_checkKeyExists(type.toString())) {
+    var key = getKey(type.toString());
+    if (!_checkKeyExists(key)) {
       throw InjectionNotFound("Injection not found from ${type.toString()}.");
     }
 
-    var ref = _store.where((e) => e.key == type.toString()).first;
+    var ref = _store.where((e) => e.key == key).first;
 
     if (!ref.isSingleton) {
       return ref.injectable();
@@ -154,12 +165,13 @@ class InjectorXBind {
 class InjectorX {
   InjectorX(this.injectNeedles) {
     for (var needle in injectNeedles) {
+      var _key = InjectorXBind.getKey(needle.getType().toString());
       if (needle.getMock() != null) {
-        _refs[needle.getType().toString()] = needle.getMock();
+        _refs[_key] = needle.getMock();
       } else {
         var obj = InjectorXBind.getByType(needle.getType(),
             newInstance: needle.isNewInstance());
-        _refs[needle.getType().toString()] = obj;
+        _refs[_key] = obj;
       }
     }
   }
@@ -168,9 +180,9 @@ class InjectorX {
   final Map<String, dynamic> _refs = {};
 
   T get<T>() {
-    var key = T.toString();
+    var key = InjectorXBind.getKey(T.toString());
     if (_refs.containsKey(key)) {
-      return _refs[T.toString()];
+      return _refs[key];
     } else {
       print("The injection reference ${T.toString()} is not found");
       throw InjectionNotFound(
@@ -191,8 +203,9 @@ abstract class Inject<T extends Inject<T>> extends Injectable {
         localNeedles = this
             .needles!
             .where((e) =>
-                e.getType().toString() !=
-                arg.type.toString().replaceAll("Mock", ""))
+                InjectorXBind.getKey(e.getType().toString()) !=
+                InjectorXBind.getKey(arg.type.toString())
+                    .replaceAll("Mock", ""))
             .toList();
       }
     }

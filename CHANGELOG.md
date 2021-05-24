@@ -1,3 +1,6 @@
+## 1.0.3
+ - Refactoring resolver to allow short contract type
+
 ## 1.0.2
  - Add replace injection reference
 
