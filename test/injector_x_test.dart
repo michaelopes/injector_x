@@ -141,4 +141,11 @@ void main() {
     expect(() => handler.get<String>(),
         throwsA(isInstanceOf<InjectionNotFound>()));
   });
+
+  test('Check replace method', () {
+    var usecaseOld = InjectorXBind.get<IUsecase<String, bool>>();
+    InjectorXBind.replace<IUsecase<String, bool>>(() => UsecaseMock());
+    var usecaseNew = InjectorXBind.get<IUsecase<String, bool>>();
+    expect(usecaseOld.hashCode == usecaseNew.hashCode, isFalse);
+  });
 }

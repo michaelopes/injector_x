@@ -105,6 +105,21 @@ class InjectorXBind {
     ));
   }
 
+  static void replace<T extends Object>(InjectableAdd<T> injectable,
+      {bool singleton = false}) {
+    var key = T.toString();
+    var list = _store.where((e) => e.key == key).toList();
+    if (list.isNotEmpty) {
+      _store.removeWhere((e) => e.key == key);
+      _store.add(_InjectStore<T>(
+        key: T.toString(),
+        singleton: null,
+        injectable: injectable,
+        isSingleton: singleton,
+      ));
+    }
+  }
+
   static T get<T extends Object>({bool newInstance = false}) {
     try {
       return getByType(T, newInstance: newInstance) as T;

@@ -1,3 +1,6 @@
+## 1.0.2
+ - Add replace injection reference
+
 ## 1.0.1
  - Convert a pure dart package
 
