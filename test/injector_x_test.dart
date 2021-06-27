@@ -129,11 +129,6 @@ void main() {
         throwsA(isInstanceOf<InjectionNotFound>()));
   });
 
-  test('Check DuplicateInjectionFound', () {
-    expect(() => InjectorXBind.add<IRepo>(() => Repo()),
-        throwsA(isInstanceOf<DuplicateInjectionFound>()));
-  });
-
   test('Check NeedleMock', () {
     var needleMock = NeedleMock<IUsecase<String, bool>>(mock: UsecaseMock());
     expect(needleMock.isNewInstance(), isTrue);
@@ -151,6 +146,13 @@ void main() {
   test('Check replace method', () {
     var usecaseOld = InjectorXBind.get<IUsecase<String, bool>>();
     InjectorXBind.replace<IUsecase<String, bool>>(() => UsecaseMock());
+    var usecaseNew = InjectorXBind.get<IUsecase<String, bool>>();
+    expect(usecaseOld.hashCode == usecaseNew.hashCode, isFalse);
+  });
+
+  test('Check replace with add method', () {
+    var usecaseOld = InjectorXBind.get<IUsecase<String, bool>>();
+    InjectorXBind.add<IUsecase<String, bool>>(() => UsecaseMock());
     var usecaseNew = InjectorXBind.get<IUsecase<String, bool>>();
     expect(usecaseOld.hashCode == usecaseNew.hashCode, isFalse);
   });

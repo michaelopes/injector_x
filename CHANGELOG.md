@@ -1,3 +1,6 @@
+## 1.0.4
+ - Replace by last add contract
+
 ## 1.0.3
  - Refactoring resolver to allow short contract type
 

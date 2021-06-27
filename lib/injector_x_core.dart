@@ -3,11 +3,6 @@ class InjectionNotFound implements Exception {
   final String message;
 }
 
-class DuplicateInjectionFound implements Exception {
-  DuplicateInjectionFound(this.message);
-  final String message;
-}
-
 abstract class INeedle<T> {
   Type getType();
   T? getMock();
@@ -105,7 +100,7 @@ class InjectorXBind {
       {bool singleton = false}) {
     var key = getKey(T.toString());
     if (_checkKeyExists(key)) {
-      throw DuplicateInjectionFound("${T.toString()} is duplicate.");
+      replace<T>(injectable);
     }
     _store.add(_InjectStore<T>(
       key: key,
