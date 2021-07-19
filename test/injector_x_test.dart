@@ -109,13 +109,22 @@ void main() {
     expect(viewModel.saveUserName(name), isTrue);
   });
 
+  test('Check usecase new instance scopped', () {
+    var usecaseNew = InjectorXBind.get<IUsecase<String, bool>>(
+        newInstance: true, scoppedNewInstance: true);
+    var usecase = InjectorXBind.get<IUsecase<String, bool>>();
+
+    var equals = usecase.hashCode == usecaseNew.hashCode;
+    expect(equals, isFalse);
+  });
+
   test('Check usecase new instance', () {
     var usecaseNew =
         InjectorXBind.get<IUsecase<String, bool>>(newInstance: true);
     var usecase = InjectorXBind.get<IUsecase<String, bool>>();
 
     var equals = usecase.hashCode == usecaseNew.hashCode;
-    expect(equals, isFalse);
+    expect(equals, isTrue);
   });
 
   test('Check get usecase short type', () {

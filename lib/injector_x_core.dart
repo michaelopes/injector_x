@@ -7,12 +7,14 @@ abstract class INeedle<T> {
   Type getType();
   T? getMock();
   bool isNewInstance();
+  bool isScopedNewInstance();
 }
 
 class Needle<T> implements INeedle<T> {
   late Type type;
   final bool newInstance;
-  Needle({this.newInstance = false}) {
+  final bool scoppedNewInstance;
+  Needle({this.newInstance = false, this.scoppedNewInstance = false}) {
     type = T;
   }
 
@@ -29,6 +31,11 @@ class Needle<T> implements INeedle<T> {
   @override
   bool isNewInstance() {
     return this.newInstance;
+  }
+
+  @override
+  bool isScopedNewInstance() {
+    return this.scoppedNewInstance;
   }
 }
 
@@ -57,6 +64,11 @@ class NeedleMock<T> implements INeedle<T> {
   @override
   bool isNewInstance() {
     return true;
+  }
+
+  @override
+  bool isScopedNewInstance() {
+    return false;
   }
 }
 
@@ -125,15 +137,19 @@ class InjectorXBind {
     }
   }
 
-  static T get<T extends Object>({bool newInstance = false}) {
+  static T get<T extends Object>(
+      {bool newInstance = false, bool scoppedNewInstance = false}) {
     try {
-      return getByType(T, newInstance: newInstance) as T;
+      return getByType(T,
+          newInstance: newInstance,
+          scoppedNewInstance: scoppedNewInstance) as T;
     } on Exception catch (e) {
       throw e;
     }
   }
 
-  static dynamic getByType(Type type, {bool newInstance = false}) {
+  static dynamic getByType(Type type,
+      {bool newInstance = false, bool scoppedNewInstance = false}) {
     var key = getKey(type.toString());
     if (!_checkKeyExists(key)) {
       throw InjectionNotFound("Injection not found from ${type.toString()}.");
@@ -151,7 +167,13 @@ class InjectorXBind {
         }
         return ref.singleton;
       } else {
-        return ref.injectable();
+        if (!scoppedNewInstance) {
+          var newI = ref.injectable();
+          ref.singleton = newI;
+          return ref.singleton;
+        } else {
+          return ref.injectable();
+        }
       }
     }
   }
@@ -164,8 +186,11 @@ class InjectorX {
       if (needle.getMock() != null) {
         _refs[_key] = needle.getMock();
       } else {
-        var obj = InjectorXBind.getByType(needle.getType(),
-            newInstance: needle.isNewInstance());
+        var obj = InjectorXBind.getByType(
+          needle.getType(),
+          newInstance: needle.isNewInstance(),
+          scoppedNewInstance: needle.isScopedNewInstance(),
+        );
         _refs[_key] = obj;
       }
     }

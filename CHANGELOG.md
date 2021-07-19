@@ -1,3 +1,6 @@
+## 1.0.5
+ - Add scoped new instance for steps pages
+
 ## 1.0.4
  - Replace by last add contract
 
